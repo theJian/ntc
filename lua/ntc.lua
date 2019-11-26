@@ -2,8 +2,33 @@ local fwdKey = '<plug>(NtcFwd)'
 local bwdKey = '<plug>(NtcBwd)'
 
 local options = {
-	no_mappings = false
+	no_mappings = false,
+	auto_popup = false,
+	popup_delay = 20,
 }
+
+local function clearTimer(timer)
+	if timer and not timer:is_closing() then
+		timer:stop()
+		timer:close()
+	end
+end
+
+local function debounce(fn)
+	local timer
+	return function ()
+		clearTimer(timer)
+		timer = vim.loop.new_timer()
+		timer:start(
+			options.popup_delay,
+			0,
+			vim.schedule_wrap(function()
+				clearTimer(timer)
+				fn()
+			end)
+		)
+	end
+end
 
 local function config(user_options)
 	options = vim.tbl_extend('force', options, user_options)
@@ -26,18 +51,26 @@ local function ins_complete(dir)
 	return termcode('<c-n>')
 end
 
+local function should_trigger_complete()
+	if vim.api.nvim_get_mode().mode ~= 'i' then
+		return false
+	end
+
+	local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+	-- the start line index is zero based while the row index returnd by nvim_win_get_cursor
+	-- is 1 based, so row index need to -1 to get the line where cursor is on.
+	local line = unpack(vim.api.nvim_buf_get_lines(0, row - 1, row, false))
+	local solidline = vim.trim(string.sub(line, col, col))
+
+	return #solidline ~= 0
+end
+
 local function complete(dir)
 	if vim.api.nvim_call_function('pumvisible', {}) == 0 then
-		local row, col = unpack(vim.api.nvim_win_get_cursor(0))
-		-- the start line index is zero based while the row index returnd by nvim_win_get_cursor
-		-- is 1 based, so row index need to -1 to get the line where cursor is on.
-		local line = unpack(vim.api.nvim_buf_get_lines(0, row - 1, row, false))
-		local solidline = vim.trim(string.sub(line, col, col))
-		if #solidline == 0 then
-			return termcode('<tab>')
+		if  should_trigger_complete() then
+			return ins_complete(dir)
 		end
-
-		return ins_complete(dir)
+		return termcode('<tab>')
 	end
 
 	if dir > 0 then
@@ -47,9 +80,21 @@ local function complete(dir)
 	end
 end
 
+local function popup()
+	if vim.api.nvim_call_function('pumvisible', {}) == 0 and should_trigger_complete() then
+		vim.api.nvim_input(ins_complete(1))
+	end
+end
+
 local function init()
 	set_expr_mapping(fwdKey, 'require("ntc").complete(1)')
 	set_expr_mapping(bwdKey, 'require("ntc").complete(-1)')
+
+	if options.auto_popup then
+		vim.api.nvim_command(
+			'autocmd TextChangedI * noautocmd lua require("ntc").popup()'
+		)
+	end
 
 	if not options.no_mappings then
 		set_key_mapping('<tab>', fwdKey)
@@ -57,9 +102,11 @@ local function init()
 	end
 end
 
+config(ntc_options)
 init()
 
 return {
 	config = config,
 	complete = complete,
+	popup = debounce(popup),
 }

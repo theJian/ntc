@@ -7,6 +7,14 @@ local options = {
 	popup_delay = 20,
 }
 
+local function termcode(k)
+	return vim.api.nvim_replace_termcodes(k, true, true, true)
+end
+
+local key_c_n = termcode('<c-n>')
+local key_c_p = termcode('<c-p>')
+local key_tab = termcode('<tab>')
+
 local function clearTimer(timer)
 	if timer and not timer:is_closing() then
 		timer:stop()
@@ -43,12 +51,8 @@ local function set_key_mapping(lhs, rhs)
 	vim.api.nvim_set_keymap('i', lhs, rhs, { unique = true })
 end
 
-local function termcode(k)
-	return vim.api.nvim_replace_termcodes(k, true, true, true)
-end
-
 local function ins_complete(dir)
-	return termcode('<c-n>')
+	return key_c_n
 end
 
 local function should_trigger_complete()
@@ -70,13 +74,13 @@ local function complete(dir)
 		if  should_trigger_complete() then
 			return ins_complete(dir)
 		end
-		return termcode('<tab>')
+		return key_tab
 	end
 
 	if dir > 0 then
-		return termcode("<c-n>")
+		return key_c_n
 	else
-		return termcode("<c-p>")
+		return key_c_p
 	end
 end
 

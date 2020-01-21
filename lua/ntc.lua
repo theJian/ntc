@@ -15,7 +15,7 @@ local key_c_n = termcode('<c-n>')
 local key_c_p = termcode('<c-p>')
 local key_tab = termcode('<tab>')
 
-local function clearTimer(timer)
+local function clear_timer(timer)
 	if timer and not timer:is_closing() then
 		timer:stop()
 		timer:close()
@@ -25,13 +25,13 @@ end
 local function debounce(fn)
 	local timer
 	return function ()
-		clearTimer(timer)
+		clear_timer(timer)
 		timer = vim.loop.new_timer()
 		timer:start(
 			options.popup_delay,
 			0,
 			vim.schedule_wrap(function()
-				clearTimer(timer)
+				clear_timer(timer)
 				fn()
 			end)
 		)

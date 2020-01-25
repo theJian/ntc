@@ -51,7 +51,7 @@ local function set_key_mapping(lhs, rhs)
 	vim.api.nvim_set_keymap('i', lhs, rhs, { unique = true })
 end
 
-local function ins_complete(dir)
+local function ins_complete()
 	return key_c_n
 end
 
@@ -72,7 +72,7 @@ end
 local function complete(dir)
 	if vim.api.nvim_call_function('pumvisible', {}) == 0 then
 		if  should_trigger_complete() then
-			return ins_complete(dir)
+			return ins_complete()
 		end
 		return key_tab
 	end
@@ -86,7 +86,7 @@ end
 
 local function popup()
 	if vim.api.nvim_call_function('pumvisible', {}) == 0 and should_trigger_complete() then
-		vim.api.nvim_input(ins_complete(1))
+		vim.api.nvim_input(ins_complete())
 	end
 end
 

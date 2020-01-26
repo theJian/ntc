@@ -1,5 +1,6 @@
 local fwdKey = '<plug>(NtcFwd)'
 local bwdKey = '<plug>(NtcBwd)'
+local cycKey = '<plug>(NtcCyc)'
 
 local options = {
 	no_mappings = false,
@@ -71,7 +72,7 @@ end
 
 local function complete(dir)
 	if vim.api.nvim_call_function('pumvisible', {}) == 0 then
-		if  should_trigger_complete() then
+		if should_trigger_complete() then
 			return ins_complete()
 		end
 		return key_tab
@@ -84,6 +85,12 @@ local function complete(dir)
 	end
 end
 
+local function cycle()
+	if vim.api.nvim_call_function('pumvisible', {}) == 0 then
+		return ins_complete()
+	end
+end
+
 local function popup()
 	if vim.api.nvim_call_function('pumvisible', {}) == 0 and should_trigger_complete() then
 		vim.api.nvim_input(ins_complete())
@@ -93,6 +100,7 @@ end
 local function init()
 	set_expr_mapping(fwdKey, 'require("ntc").complete(1)')
 	set_expr_mapping(bwdKey, 'require("ntc").complete(-1)')
+	set_expr_mapping(cycKey, 'require("ntc").cycle()')
 
 	if options.auto_popup then
 		vim.api.nvim_command(
@@ -103,6 +111,7 @@ local function init()
 	if not options.no_mappings then
 		set_key_mapping('<tab>', fwdKey)
 		set_key_mapping('<s-tab>', bwdKey)
+		set_key_mapping('<c-space>', cycKey)
 	end
 end
 
@@ -112,5 +121,6 @@ init()
 return {
 	config = config,
 	complete = complete,
+	cycle = cycle,
 	popup = debounce(popup),
 }

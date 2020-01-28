@@ -6,6 +6,7 @@ local options = {
 	no_mappings = false,
 	auto_popup = false,
 	popup_delay = 20,
+	chain = {'curt', 'file'}
 }
 
 local function termcode(k)
@@ -15,6 +16,34 @@ end
 local key_c_n = termcode('<c-n>')
 local key_c_p = termcode('<c-p>')
 local key_tab = termcode('<tab>')
+local key_c_x_c_l = termcode('<c-x><c-l>')
+local key_c_x_c_n = termcode('<c-x><c-n>')
+local key_c_x_c_k = termcode('<c-x><c-k>')
+local key_c_x_c_t = termcode('<c-x><c-t>')
+local key_c_x_c_i = termcode('<c-x><c-i>')
+local key_c_x_c_rbracket = termcode('<c-x><c-]>')
+local key_c_x_c_f = termcode('<c-x><c-f>')
+local key_c_x_c_d = termcode('<c-x><c-d>')
+local key_c_x_c_v = termcode('<c-x><c-v>')
+local key_c_x_c_u = termcode('<c-x><c-u>')
+local key_c_x_c_o = termcode('<c-x><c-o>')
+local key_c_x_s = termcode('<c-x>s')
+
+local completion = {
+	line = key_c_x_c_l,
+	curt= key_c_x_c_n,
+	dict = key_c_x_c_k,
+	thes = key_c_x_c_t,
+	incl = key_c_x_c_i,
+	tags = key_c_x_c_rbracket,
+	file = key_c_x_c_f,
+	defn = key_c_x_c_d,
+	vcmd = key_c_x_c_v,
+	user = key_c_x_v_u,
+	omni = key_c_x_c_o,
+	spel = key_c_x_s,
+	cmpl = key_c_n,
+}
 
 local function clear_timer(timer)
 	if timer and not timer:is_closing() then
@@ -52,8 +81,16 @@ local function set_key_mapping(lhs, rhs)
 	vim.api.nvim_set_keymap('i', lhs, rhs, { unique = true })
 end
 
-local function ins_complete()
-	return key_c_n
+local c = 1
+local function ins_complete(new_c)
+	local chain = options.chain
+	if new_c then
+		c = new_c
+	else
+		c = (c % #chain) + 1
+	end
+
+	return completion[chain[c]] or ''
 end
 
 local function should_trigger_complete()
@@ -73,7 +110,7 @@ end
 local function complete(dir)
 	if vim.api.nvim_call_function('pumvisible', {}) == 0 then
 		if should_trigger_complete() then
-			return ins_complete()
+			return ins_complete(1)
 		end
 		return key_tab
 	end
@@ -86,14 +123,12 @@ local function complete(dir)
 end
 
 local function cycle()
-	if vim.api.nvim_call_function('pumvisible', {}) == 0 then
-		return ins_complete()
-	end
+	return ins_complete()
 end
 
 local function popup()
-	if vim.api.nvim_call_function('pumvisible', {}) == 0 and should_trigger_complete() then
-		vim.api.nvim_input(ins_complete())
+	if should_trigger_complete() then
+		vim.api.nvim_input(ins_complete(1))
 	end
 end
 

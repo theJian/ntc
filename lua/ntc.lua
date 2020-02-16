@@ -82,7 +82,7 @@ local function set_key_mapping(lhs, rhs)
 end
 
 local c = 1
-local function next_c()
+local function next_c(chain)
 	return (c % #chain) + 1
 end
 
@@ -91,18 +91,17 @@ local function ins_complete(new_c)
 	if new_c then
 		c = new_c
 	else
-		c = next_c()
+		c = next_c(chain)
 	end
 
-	local func = chain[c]
-	if func == 'omni' then
+	if chain[c] == 'omni' then
 		local omnifunc = vim.api.nvim_buf_get_option(0, 'omnifunc')
 		if omnifunc == '' then
-			c = next_c()
+			c = next_c(chain)
 		end
 	end
 
-	return completion[func] or ''
+	return completion[chain[c]] or ''
 end
 
 local function should_trigger_complete()

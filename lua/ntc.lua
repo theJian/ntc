@@ -69,7 +69,7 @@ local function debounce(fn)
 end
 
 local function config(user_options)
-	options = vim.tbl_extend('force', options, user_options)
+	options = vim.tbl_extend('force', options, user_options or {})
 end
 
 local function set_expr_mapping(lhs, luaexpr)

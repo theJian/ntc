@@ -149,9 +149,8 @@ local function init()
 	set_expr_mapping(cycKey, 'require("ntc").cycle()')
 
 	if options.auto_popup then
-		vim.api.nvim_command(
-			'autocmd TextChangedI * noautocmd lua require("ntc").popup()'
-		)
+		vim.api.nvim_command('autocmd TextChangedI * noautocmd lua require("ntc").popup()')
+		vim.api.nvim_command('autocmd CursorMovedI * noautocmd lua require("ntc").popup()')
 	end
 
 	if not options.no_mappings then

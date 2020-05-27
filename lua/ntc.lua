@@ -5,7 +5,7 @@ local cycKey = '<plug>(NtcCyc)'
 local options = {
 	no_mappings = false,
 	auto_popup = false,
-	popup_delay = 20,
+	popup_delay = 10,
 	chain = {'curt', 'file'}
 }
 
@@ -60,10 +60,10 @@ local function debounce(fn)
 		timer:start(
 			options.popup_delay,
 			0,
-			vim.schedule_wrap(function()
+			function()
 				clear_timer(timer)
-				fn()
-			end)
+				vim.schedule_wrap(fn)()
+			end
 		)
 	end
 end
@@ -105,7 +105,7 @@ local function ins_complete(new_c)
 end
 
 local function should_trigger_complete()
-	if vim.api.nvim_get_mode().mode ~= 'i' then
+	if not string.find(vim.api.nvim_get_mode().mode, 'i') then
 		return false
 	end
 
@@ -137,11 +137,13 @@ local function cycle()
 	return ins_complete()
 end
 
-local function popup()
+local function popup_immediately()
 	if should_trigger_complete() then
 		vim.api.nvim_input(ins_complete(1))
 	end
 end
+
+local popup = debounce(popup_immediately)
 
 local function init()
 	set_expr_mapping(fwdKey, 'require("ntc").complete(1)')
@@ -150,7 +152,6 @@ local function init()
 
 	if options.auto_popup then
 		vim.api.nvim_command('autocmd TextChangedI * noautocmd lua require("ntc").popup()')
-		vim.api.nvim_command('autocmd CursorMovedI * noautocmd lua require("ntc").popup()')
 	end
 
 	if not options.no_mappings then
@@ -160,12 +161,10 @@ local function init()
 	end
 end
 
-config(ntc_options)
-init()
-
 return {
 	config = config,
 	complete = complete,
 	cycle = cycle,
-	popup = debounce(popup),
+	popup = popup,
+	init = init,
 }

@@ -113,13 +113,13 @@ local function should_trigger_complete()
 	-- the start line index is zero based while the row index returnd by nvim_win_get_cursor
 	-- is 1 based, so row index need to -1 to get the line where cursor is on.
 	local line = unpack(vim.api.nvim_buf_get_lines(0, row - 1, row, false))
-	local solidline = vim.trim(string.sub(line, col, col))
+	local line_before_cursor = string.sub(line, 1, col)
 
-	return #solidline ~= 0
+	return vim.fn.match(line_before_cursor, '\\k$') >= 0
 end
 
 local function complete(dir)
-	if vim.api.nvim_call_function('pumvisible', {}) == 0 then
+	if vim.fn.pumvisible() == 0 then
 		if should_trigger_complete() then
 			return ins_complete(1)
 		end
@@ -151,7 +151,7 @@ local function init()
 	set_expr_mapping(cycKey, 'require("ntc").cycle()')
 
 	if options.auto_popup then
-		vim.api.nvim_command('autocmd TextChangedI * noautocmd lua require("ntc").popup()')
+		vim.api.nvim_command('autocmd InsertCharPre * noautocmd lua require"ntc".popup()')
 	end
 
 	if not options.no_mappings then

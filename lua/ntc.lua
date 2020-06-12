@@ -74,7 +74,7 @@ local function set_expr_mapping(lhs, luaexpr)
 end
 
 local function set_key_mapping(lhs, rhs)
-	vim.api.nvim_buf_set_keymap(0, 'i', lhs, rhs)
+	vim.api.nvim_buf_set_keymap(0, 'i', lhs, rhs, {})
 end
 
 local c = 1

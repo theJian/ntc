@@ -142,6 +142,10 @@ end
 local popup = debounce(popup_immediately)
 
 local function setup(user_options)
+	if vim.b.ntc_options then
+		return
+	end
+
 	vim.b.ntc_options = vim.tbl_extend('keep', user_options or {}, options)
 	set_expr_mapping(fwdKey, 'require("ntc").complete(1)')
 	set_expr_mapping(bwdKey, 'require("ntc").complete(-1)')

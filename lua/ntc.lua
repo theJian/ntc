@@ -58,7 +58,7 @@ local function debounce(fn)
 		clear_timer(timer)
 		timer = vim.loop.new_timer()
 		timer:start(
-			vim.b.options.popup_delay,
+			vim.b.ntc_options.popup_delay,
 			0,
 			function()
 				clear_timer(timer)
@@ -83,7 +83,7 @@ local function next_c(chain)
 end
 
 local function ins_complete(new_c)
-	local chain = vim.b.options.chain
+	local chain = vim.b.ntc_options.chain
 	if new_c then
 		c = new_c
 	else
@@ -142,16 +142,16 @@ end
 local popup = debounce(popup_immediately)
 
 local function setup(user_options)
-	vim.b.options = vim.tbl_extend('keep', user_options or {}, options)
+	vim.b.ntc_options = vim.tbl_extend('keep', user_options or {}, options)
 	set_expr_mapping(fwdKey, 'require("ntc").complete(1)')
 	set_expr_mapping(bwdKey, 'require("ntc").complete(-1)')
 	set_expr_mapping(cycKey, 'require("ntc").cycle()')
 
-	if vim.b.options.auto_popup then
+	if vim.b.ntc_options.auto_popup then
 		vim.api.nvim_command('autocmd InsertCharPre * <buffer> noautocmd lua require"ntc".popup()')
 	end
 
-	if not vim.b.options.no_mappings then
+	if not vim.b.ntc_options.no_mappings then
 		set_key_mapping('<tab>', fwdKey)
 		set_key_mapping('<s-tab>', bwdKey)
 		set_key_mapping('<c-space>', cycKey)

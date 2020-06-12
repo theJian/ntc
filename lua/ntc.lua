@@ -70,11 +70,11 @@ end
 
 local function set_expr_mapping(lhs, luaexpr)
 	local expr = string.gsub(luaexpr, '"', "'")
-	vim.api.nvim_buf_set_keymap('i', lhs, 'luaeval("' .. expr .. '")', { silent = true, expr = true, noremap = true })
+	vim.api.nvim_buf_set_keymap(0, 'i', lhs, 'luaeval("' .. expr .. '")', { silent = true, expr = true, noremap = true })
 end
 
 local function set_key_mapping(lhs, rhs)
-	vim.api.nvim_buf_set_keymap('i', lhs, rhs, { unique = true })
+	vim.api.nvim_buf_set_keymap(0, 'i', lhs, rhs, { unique = true })
 end
 
 local c = 1

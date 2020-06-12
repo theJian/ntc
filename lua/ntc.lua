@@ -5,7 +5,7 @@ local cycKey = '<plug>(NtcCyc)'
 local options = {
 	no_mappings = false,
 	auto_popup = false,
-	popup_delay = 10,
+	popup_delay = 20,
 	chain = {'curt', 'file'}
 }
 
@@ -58,7 +58,7 @@ local function debounce(fn)
 		clear_timer(timer)
 		timer = vim.loop.new_timer()
 		timer:start(
-			options.popup_delay,
+			vim.b.options.popup_delay,
 			0,
 			function()
 				clear_timer(timer)
@@ -68,17 +68,13 @@ local function debounce(fn)
 	end
 end
 
-local function config(user_options)
-	options = vim.tbl_extend('force', options, user_options or {})
-end
-
 local function set_expr_mapping(lhs, luaexpr)
 	local expr = string.gsub(luaexpr, '"', "'")
-	vim.api.nvim_set_keymap('i', lhs, 'luaeval("' .. expr .. '")', { silent = true, expr = true, noremap = true })
+	vim.api.nvim_buf_set_keymap('i', lhs, 'luaeval("' .. expr .. '")', { silent = true, expr = true, noremap = true })
 end
 
 local function set_key_mapping(lhs, rhs)
-	vim.api.nvim_set_keymap('i', lhs, rhs, { unique = true })
+	vim.api.nvim_buf_set_keymap('i', lhs, rhs, { unique = true })
 end
 
 local c = 1
@@ -87,7 +83,7 @@ local function next_c(chain)
 end
 
 local function ins_complete(new_c)
-	local chain = options.chain
+	local chain = vim.b.options.chain
 	if new_c then
 		c = new_c
 	else
@@ -145,16 +141,17 @@ end
 
 local popup = debounce(popup_immediately)
 
-local function init()
+local function setup(user_options)
+	vim.b.options = vim.tbl_extend('keep', user_options or {}, options)
 	set_expr_mapping(fwdKey, 'require("ntc").complete(1)')
 	set_expr_mapping(bwdKey, 'require("ntc").complete(-1)')
 	set_expr_mapping(cycKey, 'require("ntc").cycle()')
 
-	if options.auto_popup then
-		vim.api.nvim_command('autocmd InsertCharPre * noautocmd lua require"ntc".popup()')
+	if vim.b.options.auto_popup then
+		vim.api.nvim_command('autocmd InsertCharPre * <buffer> noautocmd lua require"ntc".popup()')
 	end
 
-	if not options.no_mappings then
+	if not vim.b.options.no_mappings then
 		set_key_mapping('<tab>', fwdKey)
 		set_key_mapping('<s-tab>', bwdKey)
 		set_key_mapping('<c-space>', cycKey)
@@ -162,9 +159,8 @@ local function init()
 end
 
 return {
-	config = config,
 	complete = complete,
 	cycle = cycle,
 	popup = popup,
-	init = init,
+	setup = setup,
 }

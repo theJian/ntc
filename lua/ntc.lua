@@ -152,7 +152,7 @@ local function setup(user_options)
 	set_expr_mapping(cycKey, 'require("ntc").cycle()')
 
 	if vim.b.ntc_options.auto_popup then
-		vim.api.nvim_command('autocmd InsertCharPre * <buffer> noautocmd lua require"ntc".popup()')
+		vim.api.nvim_command('autocmd InsertCharPre <buffer> noautocmd lua require"ntc".popup()')
 	end
 
 	if not vim.b.ntc_options.no_mappings then
